@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상생연대 대학동아리 AI 평가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1B4F8A; --primary2: #2E6DB8; --primary-pale: #EEF4FC;
+  --accent: #D44E1A; --dark: #0E1A2B; --mid: #5A6E85;
+  --light: #F0F4F8; --white: #FAFCFF; --border: #D0DAE8;
+  --green: #1C6B45; --green-pale: #EAFAF2;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans KR',sans-serif; background:var(--light); color:var(--dark); min-height:100vh; }
+
+header {
+  background:var(--dark); padding:0 24px; height:52px;
+  display:flex; align-items:center; gap:10px;
+  border-bottom:3px solid var(--primary2); position:sticky; top:0; z-index:100;
+}
+header::after { content:''; position:absolute; bottom:-3px; left:0; width:50px; height:3px; background:var(--accent); }
+.hemblem {
+  width:28px; height:28px; background:var(--primary); border-radius:6px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Noto Serif KR',serif; font-size:10px; font-weight:700; color:#fff;
+  line-height:1.2; text-align:center; flex-shrink:0;
+}
+.htitle { font-family:'Noto Serif KR',serif; font-size:13.5px; font-weight:700; color:#fff; }
+.hsub { font-size:10px; color:#7A9EC0; }
+
+.container { max-width:980px; margin:0 auto; padding:20px 20px 48px; }
+
+.howto {
+  background:linear-gradient(135deg,var(--dark) 0%,#0A2240 100%);
+  border-radius:12px; padding:16px 20px; margin-bottom:14px;
+  display:flex; align-items:center; gap:16px;
+}
+.howto-title { font-family:'Noto Serif KR',serif; font-size:13.5px; font-weight:700; color:#fff; margin-bottom:4px; }
+.howto-desc { font-size:11.5px; color:#8AAEC8; line-height:1.65; }
+.steps { display:flex; gap:6px; flex-shrink:0; }
+.step { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 10px; text-align:center; min-width:72px; }
+.step-num { font-size:16px; margin-bottom:2px; }
+.step-text { font-size:9.5px; color:#8AAEC8; line-height:1.4; }
+
+.fw-bar {
+  background:var(--white); border:1px solid var(--border); border-radius:10px;
+  padding:11px 16px; margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.fw-label { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--primary); text-transform:uppercase; white-space:nowrap; }
+.fw-div { width:1px; height:15px; background:var(--border); }
+.fw-pills { display:flex; flex-wrap:wrap; gap:5px; }
+.fw-pill { font-size:10.5px; padding:2px 8px; border-radius:10px; background:var(--light); border:1px solid var(--border); color:var(--mid); }
+.fw-pill span { font-weight:700; color:var(--primary); }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+.panel { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:11px; }
+.panel-title { font-family:'Noto Serif KR',serif; font-size:14px; font-weight:700; color:var(--dark); }
+.panel-desc { font-size:11px; color:var(--mid); line-height:1.6; margin-top:-5px; }
+
+.paste-area {
+  width:100%; border:1.5px solid var(--border); border-radius:9px;
+  padding:11px 13px; font-size:13px; font-family:'Noto Sans KR',sans-serif;
+  color:var(--dark); background:var(--white); outline:none;
+  transition:border-color 0.18s; resize:vertical; min-height:200px; line-height:1.65;
+}
+.paste-area:focus { border-color:var(--primary2); }
+.paste-area::placeholder { color:#AABACB; }
+.char-count { font-size:11px; color:var(--mid); text-align:right; }
+
+.eval-btn {
+  width:100%; padding:13px; background:var(--primary); color:#fff;
+  border:none; border-radius:10px; cursor:pointer;
+  font-size:14px; font-family:'Noto Sans KR',sans-serif; font-weight:700;
+  transition:all 0.16s; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.eval-btn:hover { background:var(--primary2); }
+
+.result-panel { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:18px; min-height:440px; display:flex; flex-direction:column; gap:11px; }
+
+.empty-state { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--mid); text-align:center; gap:8px; }
+.empty-icon { font-size:34px; opacity:0.22; }
+.empty-text { font-size:11.5px; line-height:1.7; opacity:0.7; }
+
+.score-hero {
+  background:linear-gradient(135deg,var(--dark) 0%,#0A2240 100%);
+  border-radius:10px; padding:16px 18px; display:flex; align-items:center; gap:16px;
+  animation:fi 0.3s ease;
+}
+@keyframes fi { from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);} }
+.score-circle { width:68px; height:68px; border-radius:50%; flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:center; border:3px solid rgba(255,255,255,0.12); }
+.score-num { font-family:'Noto Serif KR',serif; font-size:22px; font-weight:700; line-height:1; }
+.score-max { font-size:9px; color:rgba(255,255,255,0.35); }
+.score-grade { font-family:'Noto Serif KR',serif; font-size:24px; font-weight:700; line-height:1; margin-bottom:3px; }
+.score-label { font-size:11px; color:rgba(255,255,255,0.55); margin-bottom:3px; }
+.score-verdict { font-size:10.5px; color:rgba(255,255,255,0.4); line-height:1.5; }
+.grade-A{color:#1C9E5A;}.grade-B{color:#2E6DB8;}.grade-C{color:#E8A020;}.grade-D{color:#D44E1A;}
+
+.criteria-grid { display:flex; flex-direction:column; gap:7px; animation:fi 0.4s ease; }
+.crit-row { display:flex; flex-direction:column; gap:2px; }
+.crit-header { display:flex; justify-content:space-between; }
+.crit-name { font-size:11px; font-weight:600; color:var(--dark); }
+.crit-score { font-size:11px; font-weight:700; color:var(--primary); }
+.crit-bar-bg { height:5px; background:var(--light); border-radius:10px; overflow:hidden; }
+.crit-bar { height:100%; border-radius:10px; transition:width 0.8s ease; }
+.crit-bar.low{background:linear-gradient(90deg,#D44E1A,#E8712E);}
+.crit-bar.mid{background:linear-gradient(90deg,#F5A623,#F8C840);}
+.crit-bar.high{background:linear-gradient(90deg,#1C6B45,#2E9E65);}
+.crit-comment { font-size:10.5px; color:var(--mid); line-height:1.5; }
+
+.rs { border:1px solid var(--border); border-radius:9px; overflow:hidden; animation:fi 0.5s ease; }
+.rs-h { padding:8px 12px; font-size:11px; font-weight:700; display:flex; align-items:center; gap:5px; }
+.rs-h.str{background:var(--green-pale);color:var(--green);border-bottom:1px solid #C0E8D0;}
+.rs-h.wk{background:#FEF0EA;color:var(--accent);border-bottom:1px solid #F0C8A8;}
+.rs-h.imp{background:var(--primary-pale);color:var(--primary);border-bottom:1px solid #BCCFE8;}
+.rs-body { padding:9px 12px; }
+.rs-item { font-size:11.5px; color:var(--dark); line-height:1.65; padding:3px 0; border-bottom:1px solid var(--light); display:flex; gap:6px; }
+.rs-item:last-child{border-bottom:none;}
+.rs-item::before{content:'·';color:var(--mid);flex-shrink:0;}
+
+.test-section { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-top:14px; }
+.test-title { font-family:'Noto Serif KR',serif; font-size:13px; font-weight:700; margin-bottom:3px; }
+.test-desc { font-size:11px; color:var(--mid); margin-bottom:10px; line-height:1.6; }
+.test-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.tc { border:1px solid var(--border); border-radius:9px; padding:10px 12px; cursor:pointer; transition:all 0.15s; background:var(--white); }
+.tc:hover{border-color:var(--primary2);background:var(--primary-pale);}
+.tc-label{font-size:9.5px;color:var(--mid);margin-bottom:2px;font-weight:600;}
+.tc-name{font-size:12px;font-weight:700;color:var(--dark);margin-bottom:3px;}
+.tc-desc{font-size:10.5px;color:var(--mid);line-height:1.5;}
+.tc-tag{margin-top:6px;display:inline-block;font-size:9.5px;padding:2px 7px;border-radius:10px;background:var(--light);color:var(--mid);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hemblem">공상<br>연</div>
+  <div>
+    <div class="htitle">상생연대 대학동아리 AI 평가 도구</div>
+    <div class="hsub">공공상생연대기금 · 상생대학 프레임워크 v1.2</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="howto">
+    <div style="flex:1">
+      <div class="howto-title">💡 사용 방법</div>
+      <div class="howto-desc">계획서 내용을 붙여넣고 버튼을 누르면 Claude에게 평가 요청이 전송됩니다.<br>Claude가 응답하면 오른쪽에 점수·등급·개선점이 자동으로 표시됩니다.</div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">📋</div><div class="step-text">계획서<br>붙여넣기</div></div>
+      <div class="step"><div class="step-num">🔍</div><div class="step-text">평가<br>요청</div></div>
+      <div class="step"><div class="step-num">📊</div><div class="step-text">결과<br>확인</div></div>
+    </div>
+  </div>
+
+  <div class="fw-bar">
+    <span class="fw-label">평가 기준</span>
+    <div class="fw-div"></div>
+    <div class="fw-pills">
+      <div class="fw-pill">재단 가치 연계성 <span>25점</span></div>
+      <div class="fw-pill">사회문제 감수성 <span>20점</span></div>
+      <div class="fw-pill">독창성·차별성 <span>20점</span></div>
+      <div class="fw-pill">실현 가능성 <span>20점</span></div>
+      <div class="fw-pill">활동 파급력 <span>15점</span></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">📄 사업계획서 입력</div>
+      <div class="panel-desc">계획서 내용 전체를 붙여넣으세요. HWP는 텍스트 복사 또는 PDF 변환 후 복사.</div>
+      <textarea class="paste-area" id="pasteArea"
+        placeholder="사업계획서 전체 내용을 여기에 붙여넣기 하세요.&#10;&#10;동아리명, 활동 계획, 예산, 기대 성과 등&#10;모든 내용을 한번에 넣으시면 됩니다."
+        oninput="updateCount()"></textarea>
+      <div class="char-count" id="charCount">0자</div>
+      <button class="eval-btn" onclick="requestEval()">
+        <span>🔍</span> Claude에게 평가 요청
+      </button>
+    </div>
+
+    <div class="result-panel">
+      <div class="panel-title">📊 평가 결과</div>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🌱</div>
+        <div class="empty-text">
+          계획서를 붙여넣고<br>평가 요청을 누르면<br>결과가 여기에 표시됩니다.
+        </div>
+      </div>
+      <div id="resultContent" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <div class="test-title">🧪 프레임워크 검증 테스트</div>
+    <div class="test-desc">샘플을 눌러 자동 입력 후 테스트하세요. 우수→높은 점수, 미흡→낮은 점수가 나와야 타당한 프레임워크입니다.</div>
+    <div class="test-grid">
+      <div class="tc" onclick="load(0)"><div class="tc-label">우수사례 ①</div><div class="tc-name">노동인권 기록 프로젝트</div><div class="tc-desc">산재 노동자 구술 생애사 기록·출판</div><div class="tc-tag">노동·기록</div></div>
+      <div class="tc" onclick="load(1)"><div class="tc-label">우수사례 ②</div><div class="tc-name">배리어프리 콘텐츠 제작</div><div class="tc-desc">장애인 접근성 문화콘텐츠 제작</div><div class="tc-tag">장애·미디어</div></div>
+      <div class="tc" onclick="load(2)"><div class="tc-label">우수사례 ③</div><div class="tc-name">기후정의 노동연대</div><div class="tc-desc">기후위기·노동자 피해 연계 캠페인</div><div class="tc-tag">기후·연대</div></div>
+      <div class="tc" onclick="load(3)"><div class="tc-label">미흡사례</div><div class="tc-name">동아리 친목 활동</div><div class="tc-desc">사회적 가치 연계 없는 친목</div><div class="tc-tag">연계성 낮음</div></div>
+      <div class="tc" onclick="load(4)"><div class="tc-label">중간사례</div><div class="tc-name">지역 봉사활동</div><div class="tc-desc">구조적 문제 인식 다소 부족</div><div class="tc-tag">봉사·지역</div></div>
+      <div class="tc" onclick="clearAll()"><div class="tc-label">직접 입력</div><div class="tc-name">+ 실제 계획서 입력</div><div class="tc-desc">실제 접수 계획서 붙여넣기</div><div class="tc-tag">커스텀</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CASES = [
+  `동아리명: 노동인권 기록 연구소모임 '일의 온도'
+구성: 사회학과·법학과 연합 소학회 10명 / 기존활동: 노동법 스터디, 현장 탐방
+사업주제: 산업재해 피해 노동자 구술 생애사 기록·출판 프로젝트. 통계 너머 노동자 개인의 삶을 기록해 노동 존엄성을 환기합니다.
+활동계획: 산재 노동자 10인 인터뷰(2개월) → 자료 정리·감수(1개월) → 소책자 300부 제작·배포 + 포럼 개최 → 온라인 아카이브 구축
+예산: 480만원 (인터뷰 사례비 150 / 인쇄·출판 200 / 포럼 80 / 아카이브 50)
+기대성과: 노동자 10인 기록 보존, 소책자 300부 배포, 노동인권 교육자료 활용`,
+
+  `동아리명: 배리어프리 콘텐츠 제작단 '모두의 화면'
+구성: 영상·미디어 전공 대학원생 8명 / 독립영화·다큐 제작 경험
+사업주제: 장애인 문화 접근성 향상을 위한 수어해설·화면해설 포함 배리어프리 단편영상 3편 제작
+활동계획: 장애인 단체 협력 인터뷰 → 배리어프리 단편 3편 제작 → 상영회 3회 → 유튜브 무료 공개 → 제작 가이드 배포
+예산: 450만원 (촬영 100 / 수어통역 150 / 편집 100 / 상영회 60 / 기타 40)
+기대성과: 영상 3편 제작, 조회수 3천회, 제작 가이드 배포`,
+
+  `동아리명: 기후정의 노동연대 '탄소와 땀'
+구성: 환경공학과·사회과학부 연합 12명 / 기후 캠페인·정책 모니터링 경험
+사업주제: 기후위기 최전선 노동자(택배·배달·건설·농업) 현실 조사·캠페인. 기후를 노동·사회 연대 이슈로 프레이밍.
+활동계획: 피해노동자 현황 조사 보고서 발간 → 인포그래픽·카드뉴스 SNS 캠페인 → 기후정의 노동연대 포럼 2회 → 국회 정책 제안서 제출
+예산: 400만원 (조사 80 / 디자인·인쇄 100 / 포럼 120 / SNS 60 / 정책 40)
+기대성과: 조사 보고서, SNS 도달 1만명, 정책제안 1건`,
+
+  `동아리명: OO 친목 동아리
+사업목표: 동아리 친목 강화, 스트레스 해소, 유대감 형성
+활동: MT 2회, 스포츠 대회, 동아리방 리모델링, 학과 축제 부스
+예산: 300만원 (MT 150 / 인테리어 100 / 기타 50)
+기대성과: 결속력 강화, 구성원 만족도 향상`,
+
+  `동아리명: 지역사회 봉사 동아리 '따뜻한 손'
+구성: 사회복지 전공 20명
+사업주제: 독거노인 방문 봉사와 급식 지원
+활동: 매주 복지관 봉사, 명절 선물 배달, 말벗 프로그램
+예산: 250만원 (교통비 100 / 선물 100 / 기타 50)
+기대성과: 봉사 500시간, 독거노인 50인 지원`
+];
+
+function updateCount() {
+  const len = document.getElementById('pasteArea').value.length;
+  document.getElementById('charCount').textContent = len.toLocaleString() + '자';
+}
+function load(i) {
+  document.getElementById('pasteArea').value = CASES[i];
+  updateCount();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function clearAll() {
+  document.getElementById('pasteArea').value = '';
+  updateCount();
+  document.getElementById('pasteArea').focus();
+}
+
+function requestEval() {
+  const text = document.getElementById('pasteArea').value.trim();
+  if (!text) { alert('계획서 내용을 먼저 입력해주세요.'); return; }
+
+  const prompt = `다음 사업계획서를 공공상생연대기금 상생연대 대학동아리 지원사업 평가 프레임워크로 평가해주세요.
+
+[평가 프레임워크 — 100점 만점]
+1. 재단 가치 연계성 (25점): 미션("상생과 연대로 함께하는 건강한 노동존중 사회") 및 4대 비전(사회적 격차 완화/사회적 연대/정의로운 사회/사회공공성 강화) 반영도
+2. 사회문제 감수성 (20점): 노동·여성·기후·장애 등 사회문제 인식 깊이, 구조적 원인 파악 여부
+3. 독창성·차별성 (20점): 동아리 기존 역량 + 재단 비전의 창의적 결합, 활동 형식 독창성
+4. 실현 가능성 (20점): 예산 적절성, 활동 계획 구체성·현실성
+5. 활동 파급력 (15점): 사회적 임팩트 가능성, 확산·지속 가능성
+
+등급: A=85이상(선정 강력 추천), B=70-84(선정 추천), C=55-69(조건부 검토), D=54이하(보완 필요)
+
+[사업계획서]
+${text}
+
+아래 JSON 형식으로만 응답해주세요 (다른 텍스트 없이):
+{"total":숫자,"grade":"A or B or C or D","verdict":"한줄총평30자이내","detected_name":"동아리명","criteria":[{"name":"재단 가치 연계성","score":숫자,"max":25,"comment":"평가내용"},{"name":"사회문제 감수성","score":숫자,"max":20,"comment":"평가내용"},{"name":"독창성·차별성","score":숫자,"max":20,"comment":"평가내용"},{"name":"실현 가능성","score":숫자,"max":20,"comment":"평가내용"},{"name":"활동 파급력","score":숫자,"max":15,"comment":"평가내용"}],"strengths":["강점1","강점2","강점3"],"weaknesses":["약점1","약점2"],"improvements":["개선점1","개선점2","개선점3"]}`;
+
+  document.getElementById('emptyState').innerHTML = `
+    <div class="empty-icon">⏳</div>
+    <div class="empty-text">Claude에게 평가 요청을 보냈어요.<br>채팅창 응답을 기다리는 중...</div>`;
+
+  if (typeof sendPrompt === 'function') {
+    sendPrompt(prompt);
+  }
+}
+
+// Claude 응답 자동 감지
+const seen = new Set();
+new MutationObserver(() => {
+  document.querySelectorAll('[data-testid="assistant-message"], .font-claude-message').forEach(el => {
+    if (seen.has(el)) return;
+    seen.add(el);
+    const text = el.innerText || '';
+    const m = text.match(/\{\s*"total"\s*:[\s\S]*?\}/);
+    if (m) { try { renderResult(JSON.parse(m[0])); } catch(e) {} }
+  });
+}).observe(document.body, {childList:true, subtree:true});
+
+function renderResult(r) {
+  const gc={A:'#1C9E5A',B:'#2E6DB8',C:'#E8A020',D:'#D44E1A'};
+  const gl={A:'선정 강력 추천',B:'선정 추천',C:'조건부 검토',D:'보완 필요'};
+
+  let h = `<div class="score-hero">
+    <div class="score-circle" style="border-color:${gc[r.grade]}40">
+      <div class="score-num" style="color:${gc[r.grade]}">${r.total}</div>
+      <div class="score-max">/ 100점</div>
+    </div>
+    <div>
+      <div class="score-grade grade-${r.grade}">${r.grade}등급 — ${gl[r.grade]}</div>
+      <div class="score-label">${r.detected_name||''}</div>
+      <div class="score-verdict">${r.verdict}</div>
+    </div>
+  </div><div class="criteria-grid">`;
+
+  r.criteria.forEach(c => {
+    const p=(c.score/c.max)*100, bc=p<40?'low':p<70?'mid':'high';
+    h+=`<div class="crit-row">
+      <div class="crit-header"><span class="crit-name">${c.name}</span><span class="crit-score">${c.score}/${c.max}점</span></div>
+      <div class="crit-bar-bg"><div class="crit-bar ${bc}" style="width:${p}%"></div></div>
+      <div class="crit-comment">${c.comment}</div>
+    </div>`;
+  });
+
+  h+=`</div><div class="rs"><div class="rs-h str">💪 강점</div><div class="rs-body">`;
+  r.strengths.forEach(s=>h+=`<div class="rs-item">${s}</div>`);
+  h+=`</div></div><div class="rs"><div class="rs-h wk">⚠️ 아쉬운 점</div><div class="rs-body">`;
+  r.weaknesses.forEach(w=>h+=`<div class="rs-item">${w}</div>`);
+  h+=`</div></div><div class="rs"><div class="rs-h imp">✏️ 개선 제안</div><div class="rs-body">`;
+  r.improvements.forEach(i=>h+=`<div class="rs-item">${i}</div>`);
+  h+=`</div></div>`;
+
+  document.getElementById('emptyState').style.display='none';
+  const el=document.getElementById('resultContent');
+  el.innerHTML=h; el.style.display='block';
+}
+</script>
+</body>
+</html>
